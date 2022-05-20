@@ -1,4 +1,4 @@
-# prd-report-generator
+# pdf-report-generator
 
 Generates an excel (csv) report for each pdf file
 
