@@ -9,3 +9,6 @@ vela
 gradlew.bat
 /gradle/wrapper/
 /gradlew
+
+
+*.pdf
