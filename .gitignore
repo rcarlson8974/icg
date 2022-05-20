@@ -1,0 +1,11 @@
+.idea
+*.iml
+*.swp
+.gradle/
+__init__.py
+*.pyc
+gardenia
+vela
+gradlew.bat
+/gradle/wrapper/
+/gradlew
