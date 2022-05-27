@@ -10,5 +10,6 @@ gradlew.bat
 /gradle/wrapper/
 /gradlew
 
+.DS_Store
 
 *.pdf
