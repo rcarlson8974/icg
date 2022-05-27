@@ -53,6 +53,7 @@ def process_pdf(unprocessed_pdf):
         filewriter.writerow(["Characteristics"])
         grep_words(filewriter, characteristics, unprocessed_pdf)
 
+        # move file when done
 
 def grep_words(filewriter, words, unprocessed_pdf):
     for word in words:

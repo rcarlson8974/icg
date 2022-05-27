@@ -3,13 +3,13 @@ Customer:,ACME Contracting
 ,
 ,
 Key Words,Page,Count
-M,a,t,e,r,i,a,l,s
+Materials
 Quartz,0,0
 Granite,0,0
 Aluminum,0,0
 Concrete,1,1
 ,
-C,o,m,p,e,t,i,t,o,r,s
+Competitors
 TMI,0,0
 Case Systems,0,0
 Leedo,0,0
@@ -19,7 +19,7 @@ ACG,0,0
 Wilkie,0,0
 Randawg Corp,0,0
 ,
-C,h,a,r,a,c,t,e,r,i,s,t,i,c,s
+Characteristics
 Face Frame,0,0
 PLAM,0,0
 Cabinet,0,0
