@@ -4,8 +4,6 @@ Generates an excel (csv) report for each pdf file
 
 
 
-John
-
 ```
 ~/projects/foo/some-project-dir:master ✗ ➭ ./bin/pdf-report-generator.py
 Generating PDF Report.........
