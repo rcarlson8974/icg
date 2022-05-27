@@ -35,33 +35,26 @@ def process_pdf(unprocessed_pdf):
         filewriter.writerow(["", ""])  # blank row
         filewriter.writerow(["", ""])  # blank row
         filewriter.writerow(["Key Words", "Page", "Count"])
+        filewriter.writerow(["Materials"])
 
         # Swap in words you wanna search for here...
         search_words = ["Quartz", "Granite", "Aluminum", "Concrete"]
-        section = "Materials"
-        filewriter.writerow(section)
-        grep_words(filewriter, section, search_words, unprocessed_pdf)
+        grep_words(filewriter, search_words, unprocessed_pdf)
         filewriter.writerow(["", ""])  # blank row after
 
         # Swap in competitors here...
         competitors = ["TMI", "Case Systems", "Leedo", "Saco", "Hansen Company", "ACG", "Wilkie", "Randawg Corp"]
-        section = "Competitors"
-        filewriter.writerow(section)
-        grep_words(filewriter, section, competitors, unprocessed_pdf)
+        filewriter.writerow(["Competitors"])
+        grep_words(filewriter, competitors, unprocessed_pdf)
         filewriter.writerow(["", ""])  # blank row after
 
         # Swap in characteristics here...
         characteristics = ["Face Frame", "PLAM", "Cabinet", "Countertop", "Casework", "Millwork", "Woodworking"]
-        section = "Characteristics"
-        filewriter.writerow(section)
-        grep_words(filewriter, section, characteristics, unprocessed_pdf)
+        filewriter.writerow(["Characteristics"])
+        grep_words(filewriter, characteristics, unprocessed_pdf)
 
 
-def grep_words(filewriter, section, words, unprocessed_pdf):
-
-    log("")
-    log("Searching {}".format(section))
-
+def grep_words(filewriter, words, unprocessed_pdf):
     for word in words:
         cmd = ['pdfgrep', '--ignore-case', '--page-count', word, 'unprocessed/' + unprocessed_pdf]
 
