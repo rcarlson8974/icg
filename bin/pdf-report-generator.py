@@ -1,6 +1,7 @@
 #!/usr/bin/python3
 import csv
 import re
+import shutil
 import subprocess
 import sys
 from glob import glob
@@ -15,12 +16,15 @@ class GenerateReport:
         set_log_level(str(options.log_level).lower())
 
         log("Generating PDF Report.........")
+        log("")
 
         # Get the list of all files in the unprocessed dir
         unprocessed_pdfs = [val.split('/')[1] for val in glob('unprocessed/*.pdf')]
         for unprocessed_pdf in unprocessed_pdfs:
             log("Processing PDF {}".format(unprocessed_pdf))
             process_pdf(unprocessed_pdf)
+            move_pdf(unprocessed_pdf)
+            log("Done processing PDF {}".format(unprocessed_pdf))
             log("")
         log("Done Generating PDF Report.........")
 
@@ -30,7 +34,7 @@ def process_pdf(unprocessed_pdf):
         filewriter = csv.writer(csvfile, delimiter=',', quotechar='|', quoting=csv.QUOTE_MINIMAL)
 
         # Header info
-        filewriter.writerow(["Project Name:", "Sample Project"])  # swap in real project name
+        filewriter.writerow(["Project Name:", unprocessed_pdf])  # swap in real project name
         filewriter.writerow(["Customer:", "ACME Contracting"])  # swap in real customer name
         filewriter.writerow(["", ""])  # blank row
         filewriter.writerow(["", ""])  # blank row
@@ -73,6 +77,10 @@ def grep_words(filewriter, words, unprocessed_pdf):
         except subprocess.CalledProcessError as e:
             log("ERROR: {}", e.output)
 
+def move_pdf(unprocessed_pdf):
+    log("Moving PDF {} to processed folder".format(unprocessed_pdf))
+    shutil.move("unprocessed/" + unprocessed_pdf, "processed/" + unprocessed_pdf)
+    log("Done moving PDF {} to processed folder".format(unprocessed_pdf))
 
 def format_grep(output):
     output = str(output)

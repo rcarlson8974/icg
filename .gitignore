@@ -4,8 +4,7 @@
 .gradle/
 __init__.py
 *.pyc
-gardenia
-vela
+temp
 gradlew.bat
 /gradle/wrapper/
 /gradlew
