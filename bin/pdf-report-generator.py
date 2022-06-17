@@ -6,6 +6,7 @@ import subprocess
 import sys
 from glob import glob
 from optparse import OptionParser
+from subprocess import Popen, PIPE
 
 from utils_log import *
 
@@ -38,58 +39,85 @@ def process_pdf(unprocessed_pdf):
         filewriter.writerow(["Customer:", "ACME Contracting"])  # swap in real customer name
         filewriter.writerow(["", ""])  # blank row
         filewriter.writerow(["", ""])  # blank row
-        filewriter.writerow(["Key Words", "Page", "Count"])
-        filewriter.writerow(["Materials"])
+        filewriter.writerow(["Key Words", "Page", "Count", "Sentence(s)"])
 
         # Swap in words you wanna search for here...
-        search_words = ["Quartz", "Granite", "Aluminum", "Concrete"]
-        grep_words(filewriter, search_words, unprocessed_pdf)
+        materials = ["Quartz", "Granite", "Aluminum", "Concrete"]
+        filewriter.writerow(["Materials"])
+        for material in materials:
+            result = grep_page_count(material, unprocessed_pdf)
+            result.append(grep_sentence(material, unprocessed_pdf))
+            filewriter.writerow(result)
         filewriter.writerow(["", ""])  # blank row after
 
         # Swap in competitors here...
         competitors = ["TMI", "Case Systems", "Leedo", "Saco", "Hansen Company", "ACG", "Wilkie", "Randawg Corp"]
         filewriter.writerow(["Competitors"])
-        grep_words(filewriter, competitors, unprocessed_pdf)
+        for competitor in competitors:
+            result = grep_page_count(competitor, unprocessed_pdf)
+            result.append(grep_sentence(competitor, unprocessed_pdf))
+            filewriter.writerow(result)
         filewriter.writerow(["", ""])  # blank row after
 
         # Swap in characteristics here...
         characteristics = ["Face Frame", "PLAM", "Cabinet", "Countertop", "Casework", "Millwork", "Woodworking"]
         filewriter.writerow(["Characteristics"])
-        grep_words(filewriter, characteristics, unprocessed_pdf)
+        for characteristic in characteristics:
+            result = grep_page_count(characteristic, unprocessed_pdf)
+            result.append(grep_sentence(characteristic, unprocessed_pdf))
+            filewriter.writerow(result)
 
-        # move file when done
 
-def grep_words(filewriter, words, unprocessed_pdf):
-    for word in words:
-        cmd = ['pdfgrep', '--ignore-case', '--page-count', word, 'unprocessed/' + unprocessed_pdf]
+def grep_page_count(word, unprocessed_pdf):
+    cmd = ['pdfgrep', '--cache', '--page-count', word, 'unprocessed/' + unprocessed_pdf]
 
-        try:
-            output = subprocess.Popen(cmd, stdout=subprocess.PIPE)
-            output = output.communicate()
-            log("Page:Word Count for {} is {}".format(word, format_grep(output)))
+    try:
+        process = subprocess.Popen(cmd, stdout=subprocess.PIPE, encoding='utf8')
+        output = process.communicate()
+        if ':' in format_grep(output):
+            vals = format_grep(output).split(':')
+            result = [word, vals[0], vals[1]]
+        else:
+            result = [word, "0", "0"]
 
-            if ':' in format_grep(output):
-                vals = format_grep(output).split(':')
-                filewriter.writerow([word, vals[0], vals[1]])
-            else:
-                filewriter.writerow([word, "0", "0"])
+        log("Page:Word Count for {} is {}".format(word, result))
+        return result
+    except subprocess.CalledProcessError as e:
+        log("ERROR: {}", e.output)
 
-        except subprocess.CalledProcessError as e:
-            log("ERROR: {}", e.output)
+
+def grep_sentence(word, unprocessed_pdf):
+    cmd = ["pdfgrep", "--cache", word, "unprocessed/" + unprocessed_pdf]
+    grep_match = ".{0,0}" + word + ".{0,30}"
+
+    try:
+
+        pdfgrep_proc = Popen(cmd, stdout=PIPE, stderr=PIPE, encoding='utf8', universal_newlines=True)
+        grep_proc = Popen(['grep', '-Eo', grep_match], stdin=pdfgrep_proc.stdout, stdout=PIPE, encoding='utf8')
+        pdfgrep_proc.stdout.close()
+        stdout, err = grep_proc.communicate()
+
+        sentences = stdout
+        log(">>>> sentences for {} is {}".format(word, sentences))
+        return sentences
+
+    except subprocess.CalledProcessError as e:
+        log("ERROR: {}", e.output)
+
 
 def move_pdf(unprocessed_pdf):
     log("Moving PDF {} to processed folder".format(unprocessed_pdf))
     shutil.move("unprocessed/" + unprocessed_pdf, "processed/" + unprocessed_pdf)
     log("Done moving PDF {} to processed folder".format(unprocessed_pdf))
 
+
 def format_grep(output):
     output = str(output)
     new_text = re.sub(r"[^a-zA-Z0-9:]", "", output)
-    new_text = new_text.replace("b", "")
-    new_text = new_text.replace("n", "")
-    new_text = new_text.replace("|", "")
-    new_text = new_text.replace("Noe", "")
-    # new_text = new_text.replace(":", ",")
+    # new_text = new_text.replace("b", "")
+    new_text = new_text.replace("nNone", "")
+    # new_text = new_text.replace("n", "")
+    # new_text = new_text.replace("|", "")
     new_text = new_text.strip()
     return new_text
 
