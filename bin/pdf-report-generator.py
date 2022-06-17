@@ -1,4 +1,4 @@
-#!/usr/bin/python3
+#!/usr/local/bin/python3
 import csv
 import re
 import shutil
@@ -32,7 +32,7 @@ class GenerateReport:
 
 def process_pdf(unprocessed_pdf):
     with open("reports/" + unprocessed_pdf + ".csv", 'w') as csvfile:
-        filewriter = csv.writer(csvfile, delimiter=',', quotechar='|', quoting=csv.QUOTE_MINIMAL)
+        filewriter = csv.writer(csvfile, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
 
         # Header info
         filewriter.writerow(["Project Name:", unprocessed_pdf])  # swap in real project name
@@ -88,7 +88,7 @@ def grep_page_count(word, unprocessed_pdf):
 
 def grep_sentence(word, unprocessed_pdf):
     cmd = ["pdfgrep", "--cache", word, "unprocessed/" + unprocessed_pdf]
-    grep_match = ".{0,0}" + word + ".{0,30}"
+    grep_match = ".{0,0}" + word + ".{0,45}"
 
     try:
 
@@ -98,7 +98,7 @@ def grep_sentence(word, unprocessed_pdf):
         stdout, err = grep_proc.communicate()
 
         sentences = stdout
-        log(">>>> sentences for {} is {}".format(word, sentences))
+        log("Sentences for {} is {}".format(word, sentences))
         return sentences
 
     except subprocess.CalledProcessError as e:
@@ -114,10 +114,7 @@ def move_pdf(unprocessed_pdf):
 def format_grep(output):
     output = str(output)
     new_text = re.sub(r"[^a-zA-Z0-9:]", "", output)
-    # new_text = new_text.replace("b", "")
     new_text = new_text.replace("nNone", "")
-    # new_text = new_text.replace("n", "")
-    # new_text = new_text.replace("|", "")
     new_text = new_text.strip()
     return new_text
 
