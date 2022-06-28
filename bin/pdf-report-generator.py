@@ -1,6 +1,5 @@
 #!/usr/bin/python3
 import csv
-import re
 import shutil
 import subprocess
 import sys
@@ -45,61 +44,70 @@ def process_pdf(unprocessed_pdf):
         materials = ["Quartz", "Granite", "Aluminum", "Concrete"]
         filewriter.writerow(["Materials"])
         for material in materials:
-            result = grep_page_count(material, unprocessed_pdf)
-            result.append(grep_sentence(material, unprocessed_pdf))
-            filewriter.writerow(result)
+            grep_page_count(material, unprocessed_pdf, filewriter)
         filewriter.writerow(["", ""])  # blank row after
 
         # Swap in competitors here...
         competitors = ["TMI", "Case Systems", "Leedo", "Saco", "Hansen Company", "ACG", "Wilkie", "Randawg Corp"]
         filewriter.writerow(["Competitors"])
         for competitor in competitors:
-            result = grep_page_count(competitor, unprocessed_pdf)
-            result.append(grep_sentence(competitor, unprocessed_pdf))
-            filewriter.writerow(result)
+            grep_page_count(competitor, unprocessed_pdf, filewriter)
         filewriter.writerow(["", ""])  # blank row after
 
         # Swap in characteristics here...
         characteristics = ["Face Frame", "PLAM", "Cabinet", "Countertop", "Casework", "Millwork", "Woodworking"]
         filewriter.writerow(["Characteristics"])
         for characteristic in characteristics:
-            result = grep_page_count(characteristic, unprocessed_pdf)
-            result.append(grep_sentence(characteristic, unprocessed_pdf))
-            filewriter.writerow(result)
+            grep_page_count(characteristic, unprocessed_pdf, filewriter)
 
 
-def grep_page_count(word, unprocessed_pdf):
+def grep_page_count(word, unprocessed_pdf, filewriter):
     cmd = ['pdfgrep', '--ignore-case', '--cache', '--page-count', word, 'unprocessed/' + unprocessed_pdf]
 
     try:
+        # log("Running {} page count".format(cmd))
         process = subprocess.Popen(cmd, stdout=subprocess.PIPE, encoding='utf8')
         output = process.communicate()
-        if ':' in format_grep(output):
-            vals = format_grep(output).split(':')
-            result = [word, vals[0], vals[1]]
-        else:
-            result = [word, "0", "0"]
 
-        log("Page:Word Count for {} is {}".format(word, result))
-        return result
+        for element in output:
+            result = [word, "0", "0", ""]  # I think I need to do an else and write this out....
+            if element is not None:
+                results = element.splitlines()
+
+                start = 0
+                stop = 0
+
+                for result in results:
+                    page_counts = result.split(":")
+                    page = int(page_counts[0])
+                    count = int(page_counts[1])
+                    # log("page {} and count is {}".format(page, count))
+                    if stop == 0:
+                        stop = (count - 1) + stop
+                    else:
+                        stop = count + stop
+                    result = [word, page, count, grep_sentence(word, start, stop, unprocessed_pdf)]
+                    filewriter.writerow(result)
+                    start = stop
     except subprocess.CalledProcessError as e:
         log("ERROR: {}", e.output)
 
 
-def grep_sentence(word, unprocessed_pdf):
+def grep_sentence(word, start, stop, unprocessed_pdf):
     cmd = ['pdfgrep', '--ignore-case', '--cache', word, 'unprocessed/' + unprocessed_pdf]
-    grep_match = ".{0,0}" + word + ".{0,45}"
+    grep_match = ".{0,0}" + word + ".{0,90}"
 
     try:
 
+        # log("Running {} sentences".format(cmd))
         pdfgrep_proc = Popen(cmd, stdout=PIPE, stderr=PIPE, encoding='utf8', universal_newlines=True)
         grep_proc = Popen(['grep', '-iEo', grep_match], stdin=pdfgrep_proc.stdout, stdout=PIPE, encoding='utf8')
         pdfgrep_proc.stdout.close()
         stdout, err = grep_proc.communicate()
-
         sentences = stdout
-        log("Sentences for {} is {}".format(word, sentences))
-        return sentences
+        results = sentences.splitlines()
+        page_sentences = results[start:stop]
+        return "\n".join(page_sentences)
 
     except subprocess.CalledProcessError as e:
         log("ERROR: {}", e.output)
@@ -109,14 +117,6 @@ def move_pdf(unprocessed_pdf):
     log("Moving PDF {} to processed folder".format(unprocessed_pdf))
     shutil.move("unprocessed/" + unprocessed_pdf, "processed/" + unprocessed_pdf)
     log("Done moving PDF {} to processed folder".format(unprocessed_pdf))
-
-
-def format_grep(output):
-    output = str(output)
-    new_text = re.sub(r"[^a-zA-Z0-9:]", "", output)
-    new_text = new_text.replace("nNone", "")
-    new_text = new_text.strip()
-    return new_text
 
 
 def validate_usage(options):
