@@ -69,7 +69,7 @@ def process_pdf(unprocessed_pdf):
 
 
 def grep_page_count(word, unprocessed_pdf):
-    cmd = ['pdfgrep', '--cache', '--page-count', word, 'unprocessed/' + unprocessed_pdf]
+    cmd = ['pdfgrep', '--ignore-case', '--cache', '--page-count', word, 'unprocessed/' + unprocessed_pdf]
 
     try:
         process = subprocess.Popen(cmd, stdout=subprocess.PIPE, encoding='utf8')
@@ -87,13 +87,13 @@ def grep_page_count(word, unprocessed_pdf):
 
 
 def grep_sentence(word, unprocessed_pdf):
-    cmd = ["pdfgrep", "--cache", word, "unprocessed/" + unprocessed_pdf]
+    cmd = ['pdfgrep', '--ignore-case', '--cache', word, 'unprocessed/' + unprocessed_pdf]
     grep_match = ".{0,0}" + word + ".{0,45}"
 
     try:
 
         pdfgrep_proc = Popen(cmd, stdout=PIPE, stderr=PIPE, encoding='utf8', universal_newlines=True)
-        grep_proc = Popen(['grep', '-Eo', grep_match], stdin=pdfgrep_proc.stdout, stdout=PIPE, encoding='utf8')
+        grep_proc = Popen(['grep', '-iEo', grep_match], stdin=pdfgrep_proc.stdout, stdout=PIPE, encoding='utf8')
         pdfgrep_proc.stdout.close()
         stdout, err = grep_proc.communicate()
 
