@@ -41,7 +41,7 @@ def process_pdf(unprocessed_pdf):
         filewriter.writerow(["Key Words", "Page", "Count", "Sentence(s)"])
 
         # Swap in words you wanna search for here...
-        materials = ["Quartz", "Granite", "Aluminum", "Concrete"]
+        materials = ["Quartz", "Granite", "Marble"]
         filewriter.writerow(["Materials"])
         for material in materials:
             grep_page_count(material, unprocessed_pdf, filewriter)
