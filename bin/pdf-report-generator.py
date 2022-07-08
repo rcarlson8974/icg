@@ -41,21 +41,22 @@ def process_pdf(unprocessed_pdf):
         filewriter.writerow(["Key Words", "Page", "Count", "Sentence(s)"])
 
         # Swap in words you wanna search for here...
-        materials = ["Quartz", "Granite", "Aluminum", "Concrete"]
+        materials = ["Quartz", "Granite", "Marble"]
         filewriter.writerow(["Materials"])
         for material in materials:
             grep_page_count(material, unprocessed_pdf, filewriter)
         filewriter.writerow(["", ""])  # blank row after
 
         # Swap in competitors here...
-        competitors = ["TMI", "Case Systems", "Leedo", "Saco", "Hansen Company", "ACG", "Wilkie", "Randawg Corp"]
+        # I think this needs to be updated right?
+        competitors = ["TMI", "Case Systems", "Leedo", "Saco", "ACG", "Wilkie"]
         filewriter.writerow(["Competitors"])
         for competitor in competitors:
             grep_page_count(competitor, unprocessed_pdf, filewriter)
         filewriter.writerow(["", ""])  # blank row after
 
         # Swap in characteristics here...
-        characteristics = ["Face Frame", "PLAM", "Cabinet", "Countertop", "Casework", "Millwork", "Woodworking"]
+        characteristics = ["3form", "AWI", "Cabinet", "Casework", "Corian", "Countertop", "Face Frame", "Formica", "FSC", "Glass", "Laminate", "Linear Feet", "Millwork", "PLAM", "Premium Grade", "QCP", "Solid Surface", "Stain", "Trim", "Woodworking"]
         filewriter.writerow(["Characteristics"])
         for characteristic in characteristics:
             grep_page_count(characteristic, unprocessed_pdf, filewriter)
