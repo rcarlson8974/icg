@@ -40,6 +40,12 @@ def process_pdf(unprocessed_pdf):
         filewriter.writerow(["", ""])  # blank row
         filewriter.writerow(["Key Words", "Page", "Count", "Sentence(s)"])
 
+        project_attributes = ["Due Date", "Surety Bond", "Payment Bond", "Performance Bond", "Finish Schedule"]
+        filewriter.writerow(["Project"])
+        for project_attribute in project_attributes:
+            grep_page_count(project_attribute, unprocessed_pdf, filewriter)
+        filewriter.writerow(["", ""])  # blank row after
+
         # Swap in words you wanna search for here...
         materials = ["Quartz", "Granite", "Marble"]
         filewriter.writerow(["Materials"])
@@ -66,7 +72,7 @@ def grep_page_count(word, unprocessed_pdf, filewriter):
     cmd = ['pdfgrep', '--ignore-case', '--cache', '--page-count', word, 'unprocessed/' + unprocessed_pdf]
 
     try:
-        # log("Running {} page count".format(cmd))
+        # log("DEBUG -> Running {} page count".format(cmd))
         process = subprocess.Popen(cmd, stdout=subprocess.PIPE, encoding='utf8')
         output = process.communicate()
 
@@ -74,6 +80,10 @@ def grep_page_count(word, unprocessed_pdf, filewriter):
             result = [word, "0", "0", ""]  # I think I need to do an else and write this out....
             if element is not None:
                 results = element.splitlines()
+
+                # write out empty row
+                if len(results) == 0:
+                    filewriter.writerow(result)
 
                 start = 0
                 stop = 0
@@ -90,6 +100,7 @@ def grep_page_count(word, unprocessed_pdf, filewriter):
                     result = [word, page, count, grep_sentence(word, start, stop, unprocessed_pdf)]
                     filewriter.writerow(result)
                     start = stop
+
     except subprocess.CalledProcessError as e:
         log("ERROR: {}", e.output)
 
@@ -100,7 +111,7 @@ def grep_sentence(word, start, stop, unprocessed_pdf):
 
     try:
 
-        # log("Running {} sentences".format(cmd))
+        # log("DEBUG -> Running {} sentences".format(cmd))
         pdfgrep_proc = Popen(cmd, stdout=PIPE, stderr=PIPE, encoding='utf8', universal_newlines=True)
         grep_proc = Popen(['grep', '-iEo', grep_match], stdin=pdfgrep_proc.stdout, stdout=PIPE, encoding='utf8')
         pdfgrep_proc.stdout.close()
