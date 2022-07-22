@@ -18,54 +18,52 @@ class GenerateReport:
         log("Generating PDF Report.........")
         log("")
 
+        # Getting all the config options
+        project_attributes = open('config/project_attributes.txt', 'r').readlines()
+        materials = open('config/materials.txt', 'r').readlines()
+        competitors = open('config/competitors.txt', 'r').readlines()
+        characteristics = open('config/characteristics.txt', 'r').readlines()
+
         # Get the list of all files in the unprocessed dir
         unprocessed_pdfs = [val.split('/')[1] for val in glob('unprocessed/*.pdf')]
         for unprocessed_pdf in unprocessed_pdfs:
             log("Processing PDF {}".format(unprocessed_pdf))
-            process_pdf(unprocessed_pdf)
+            process_pdf(unprocessed_pdf, project_attributes, materials, competitors, characteristics)
             move_pdf(unprocessed_pdf)
             log("Done processing PDF {}".format(unprocessed_pdf))
             log("")
         log("Done Generating PDF Report.........")
 
 
-def process_pdf(unprocessed_pdf):
+def process_pdf(unprocessed_pdf, project_attributes, materials, competitors, characteristics):
     with open("reports/" + unprocessed_pdf + ".csv", 'w') as csvfile:
         filewriter = csv.writer(csvfile, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
 
         # Header info
-        filewriter.writerow(["Project Name:", unprocessed_pdf])  # swap in real project name
+        filewriter.writerow(["Project Name:", unprocessed_pdf])
         filewriter.writerow(["Customer:", "ACME Contracting"])  # swap in real customer name
         filewriter.writerow(["", ""])  # blank row
         filewriter.writerow(["", ""])  # blank row
         filewriter.writerow(["Key Words", "Page", "Count", "Sentence(s)"])
 
-        project_attributes = ["Due Date", "Surety Bond", "Payment Bond", "Performance Bond", "Finish Schedule"]
         filewriter.writerow(["Project"])
         for project_attribute in project_attributes:
-            grep_page_count(project_attribute, unprocessed_pdf, filewriter)
+            grep_page_count(project_attribute.strip(), unprocessed_pdf, filewriter)
         filewriter.writerow(["", ""])  # blank row after
 
-        # Swap in words you wanna search for here...
-        materials = ["Quartz", "Granite", "Marble"]
         filewriter.writerow(["Materials"])
         for material in materials:
-            grep_page_count(material, unprocessed_pdf, filewriter)
+            grep_page_count(material.strip(), unprocessed_pdf, filewriter)
         filewriter.writerow(["", ""])  # blank row after
 
-        # Swap in competitors here...
-        # I think this needs to be updated right?
-        competitors = ["TMI", "Case Systems", "Leedo", "Saco", "ACG", "Wilkie"]
         filewriter.writerow(["Competitors"])
         for competitor in competitors:
-            grep_page_count(competitor, unprocessed_pdf, filewriter)
+            grep_page_count(competitor.strip(), unprocessed_pdf, filewriter)
         filewriter.writerow(["", ""])  # blank row after
 
-        # Swap in characteristics here...
-        characteristics = ["3form", "AWI", "Cabinet", "Casework", "Corian", "Countertop", "Face Frame", "Formica", "FSC", "Glass", "Laminate", "Linear Feet", "Millwork", "PLAM", "Premium Grade", "QCP", "Solid Surface", "Stain", "Trim", "Woodworking"]
         filewriter.writerow(["Characteristics"])
         for characteristic in characteristics:
-            grep_page_count(characteristic, unprocessed_pdf, filewriter)
+            grep_page_count(characteristic.strip(), unprocessed_pdf, filewriter)
 
 
 def grep_page_count(word, unprocessed_pdf, filewriter):
@@ -110,7 +108,6 @@ def grep_sentence(word, start, stop, unprocessed_pdf):
     grep_match = ".{0,0}" + word + ".{0,90}"
 
     try:
-
         # log("DEBUG -> Running {} sentences".format(cmd))
         pdfgrep_proc = Popen(cmd, stdout=PIPE, stderr=PIPE, encoding='utf8', universal_newlines=True)
         grep_proc = Popen(['grep', '-iEo', grep_match], stdin=pdfgrep_proc.stdout, stdout=PIPE, encoding='utf8')
